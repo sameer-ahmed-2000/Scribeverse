@@ -15,6 +15,13 @@ export const signinInput = z.object({
 
 export type SigninInput=z.infer<typeof signinInput>
 
+export const interestInput=z.object({
+    add: z.array(z.string()).optional(),
+    remove: z.array(z.string()).optional()
+}).optional()
+
+export type InterestInput=z.infer<typeof interestInput>
+
 export const createPostInput = z.object({
     title: z.string(),
     content: z.string(),
