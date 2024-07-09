@@ -328,8 +328,7 @@ handleRouter.post('/unfollow', async (c) => {
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
     const body = await c.req.json();
-    const { userIdToUnfollow } = body; // Assuming the user to unfollow ID is sent in the body
-
+    const { userIdToUnfollow } = body;
     if (!userIdToUnfollow) {
         c.status(400);
         return c.json({ message: "User ID to unfollow is required" });
