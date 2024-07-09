@@ -264,12 +264,12 @@ handleRouter.post('/delete-interests', async (c) => {
     }
 });
 
-handleRouter.post('/follow', async (c) => {
+handleRouter.post('/follow/:id', async (c) => {
+    const id=c.req.param("id");
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-    const body = await c.req.json();
-    const { userIdToFollow } = body;
+    const userIdToFollow  = id;
 
     if (!userIdToFollow) {
         c.status(400);
@@ -323,12 +323,12 @@ handleRouter.post('/follow', async (c) => {
 });
 
 
-handleRouter.post('/unfollow', async (c) => {
+handleRouter.post('/unfollow/:id', async (c) => {
+    const id=c.req.param("id");
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-    const body = await c.req.json();
-    const { userIdToUnfollow } = body;
+    const userIdToUnfollow = id;
     if (!userIdToUnfollow) {
         c.status(400);
         return c.json({ message: "User ID to unfollow is required" });
