@@ -79,7 +79,7 @@ userRouter.post('/signup',async(c)=>{
         
         })
         const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
-        return c.json({ jwt });
+        return c.json({ id:user.id, jwt });
     } catch(error){
         c.status(500);
         return c.json({ message: 'Internal server error', error: (error as Error).message });
@@ -118,7 +118,7 @@ userRouter.post('/signin',async(c)=>{
     }
 
     const jwt = await sign({ id: User.id }, c.env.JWT_SECRET);
-    return c.json({ jwt });
+    return c.json({ id:User.id,jwt });
     } catch(error){
         console.error('Error during signin:', error);
         c.status(500);
@@ -145,12 +145,38 @@ handleRouter.use("/*", async (c, next) => {
         return c.json({ error: "Unauthorized" });
     }
 });
+
+handleRouter.get('/me',async(c)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+
+    try{
+        const userId=c.get('userId')
+        const user=await prisma.user.findFirst({
+            where:{
+                id:userId
+            },
+            include:{
+                following:true,
+                followers:true
+            }
+        })
+
+        return c.json({
+            user,
+            
+        })
+    }catch{
+
+    }
+})
+
 handleRouter.post('/update-interests', async (c) => {
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
     const body = await c.req.json();
-    // Validate input
     const parsedInput = interestInput.safeParse(body);
     if(!parsedInput.success){
         c.status(411)
@@ -197,7 +223,6 @@ handleRouter.post('/delete-interests', async (c) => {
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
     const body = await c.req.json();
-    // Validate input
     const parsedInput = interestInput.safeParse(body);
     if(!parsedInput.success){
         c.status(411)
@@ -234,6 +259,125 @@ handleRouter.post('/delete-interests', async (c) => {
     } catch (error) {
         c.status(500)
         return c.json({message:"Error while updating"})
+    } finally {
+        await prisma.$disconnect();
+    }
+});
+
+handleRouter.post('/follow', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const body = await c.req.json();
+    const { userIdToFollow } = body;
+
+    if (!userIdToFollow) {
+        c.status(400);
+        return c.json({ message: "User ID to follow is required" });
+    }
+
+    try {
+        const currentUserId = c.get('userId');
+        const existingFollow = await prisma.follow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId: currentUserId,
+                    followingId: userIdToFollow,
+                },
+            },
+        });
+
+        if (existingFollow) {
+            c.status(409);
+            return c.json({ message: "You are already following this user" });
+        }
+        await prisma.$transaction([
+            prisma.follow.create({
+                data: {
+                    followerId: currentUserId,
+                    followingId: userIdToFollow,
+                },
+            }),
+            prisma.user.update({
+                where: { id: currentUserId },
+                data: {
+                    following: {},
+                },
+            }),
+            prisma.user.update({
+                where: { id: userIdToFollow },
+                data: {
+                    followers: {},
+                },
+            }),
+        ]);
+
+        return c.json({ message: "Successfully followed the user" });
+    } catch (error) {
+        console.error("Error following user:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error", error });
+    } finally {
+        await prisma.$disconnect();
+    }
+});
+
+
+handleRouter.post('/unfollow', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const body = await c.req.json();
+    const { userIdToUnfollow } = body; // Assuming the user to unfollow ID is sent in the body
+
+    if (!userIdToUnfollow) {
+        c.status(400);
+        return c.json({ message: "User ID to unfollow is required" });
+    }
+
+    try {
+        const currentUserId = c.get('userId');
+        const existingFollow = await prisma.follow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId: currentUserId,
+                    followingId: userIdToUnfollow,
+                },
+            },
+        });
+
+        if (!existingFollow) {
+            c.status(404);
+            return c.json({ message: "You are not following this user" });
+        }
+        await prisma.$transaction([
+            prisma.follow.delete({
+                where: {
+                    followerId_followingId: {
+                        followerId: currentUserId,
+                        followingId: userIdToUnfollow,
+                    },
+                },
+            }),
+            prisma.user.update({
+                where: { id: currentUserId },
+                data: {
+                    following: {},
+                },
+            }),
+            prisma.user.update({
+                where: { id: userIdToUnfollow },
+                data: {
+                    followers: {},
+                },
+            }),
+        ]);
+
+        return c.json({ message: "Successfully unfollowed the user" });
+    } catch (error) {
+        console.error("Error unfollowing user:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error", error});
     } finally {
         await prisma.$disconnect();
     }
