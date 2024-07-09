@@ -3,8 +3,9 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
-import { signinInput, signupInput } from '@sameer119/bloggingweb-types'
+import { interestInput, signinInput, signupInput } from '@sameer119/bloggingweb-types'
 import { jwtVerify } from 'jose';
+
 interface CustomContext {
     Bindings: {
         DATABASE_URL: string;
@@ -142,5 +143,98 @@ handleRouter.use("/*", async (c, next) => {
         console.error("Authorization error:", error);
         c.status(403);
         return c.json({ error: "Unauthorized" });
+    }
+});
+handleRouter.post('/update-interests', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    const body = await c.req.json();
+    // Validate input
+    const parsedInput = interestInput.safeParse(body);
+    if(!parsedInput.success){
+        c.status(411)
+        return c.json({
+            message:"Incorrect inputs"
+            
+        })
+    }
+    const {add=[]}=parsedInput.data||{}
+
+    try {
+        const userId=c.get('userId')
+        const user= await prisma.user.findFirst({
+            where:{
+                id:userId
+            },
+            select:{
+                interests:true
+            }
+        })
+        let newInterest=user?.interests||[];
+        newInterest=Array.from(new Set([...newInterest,...add]))
+        await prisma.user.update({
+            data:{
+                interests:newInterest
+            },
+            where:{id:userId}
+        })
+        return c.json({
+            message:"Interests updated successfully",
+            interests:newInterest
+        })
+        
+    } catch (error) {
+        c.status(500)
+        c.json({ message: "Internal server error" });
+    } finally {
+        await prisma.$disconnect();
+    }
+});
+
+handleRouter.post('/delete-interests', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    const body = await c.req.json();
+    // Validate input
+    const parsedInput = interestInput.safeParse(body);
+    if(!parsedInput.success){
+        c.status(411)
+        return c.json({
+            message:"Incorrect inputs"
+            
+        })
+    }
+    const {remove=[]}=parsedInput.data||{}
+
+    try {
+        const userId=c.get('userId')
+        const user= await prisma.user.findFirst({
+            where:{
+                id:userId
+            },
+            select:{
+                interests:true
+            }
+        })
+        let removeInterest=user?.interests||[];
+        removeInterest = removeInterest.filter(interest => !remove.includes(interest));
+        await prisma.user.update({
+            data:{
+                interests:removeInterest
+            },
+            where:{id:userId}
+        })
+        return c.json({
+            message:"Interests updated successfully",
+            interests:removeInterest
+        })
+        
+    } catch (error) {
+        c.status(500)
+        return c.json({message:"Error while updating"})
+    } finally {
+        await prisma.$disconnect();
     }
 });
