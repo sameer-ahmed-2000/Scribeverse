@@ -174,3 +174,228 @@ blogRouter.get('/bulk',async (c)=>{
     }
     
 })
+
+blogRouter.post('/:postId/comments', async (c) => {
+
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+        }).$extends(withAccelerate());
+        const postId=c.req.param('postId')
+        const body = await c.req.json();
+        const { content } = body;
+    
+        if (!content || !postId) {
+        c.status(400);
+        return c.json({ message: "Missing required fields (content, postId)" });
+        }
+    
+        const currentUserId = c.get('userId');
+    
+        try {
+        const comment = await prisma.comment.create({
+            data: {
+                content,
+                author: { connect: { id: currentUserId } },
+                post:{connect:{id:postId}}
+            },
+        });
+    
+        return c.json({ message: "Comment created successfully", comment });
+        } catch (error) {
+        console.error("Error creating comment:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+        } finally {
+        await prisma.$disconnect();
+        }
+    }
+);
+
+blogRouter.get('/:postId/comments', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    });
+
+    const postId = c.req.param('postId');
+
+    try {
+    const comments = await prisma.comment.findMany({
+        where: { postId },
+        include: { author: true },
+    });
+
+    return c.json({ comments });
+    } catch (error) {
+    console.error("Error fetching comments:", error);
+    c.status(500);
+    return c.json({ message: "Internal server error" });
+    } finally {
+    await prisma.$disconnect();
+    }
+});
+
+blogRouter.put('/comments/:commentId', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const commentId = c.req.param('commentId');
+    const body = await c.req.json();
+    const { content } = body;
+
+    if (!content) {
+        c.status(400);
+        return c.json({ message: "Missing required field (content)" });
+    }
+
+    try {
+    const updatedComment = await prisma.comment.update({
+        where: { id: commentId },
+        data: { content },
+    });
+
+    return c.json({ message: "Comment updated successfully", updatedComment });
+    } catch (error) {
+    console.error("Error updating comment:", error);
+    c.status(500);
+    return c.json({ message: "Internal server error" });
+    } finally {
+    await prisma.$disconnect();
+    }
+});
+
+
+blogRouter.delete('/comments/:commentId', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+        }).$extends(withAccelerate());
+    
+        const commentId = c.req.param('commentId')
+    
+        try {
+        await prisma.comment.delete({ where: { id: commentId } });
+    
+        return c.json({ message: "Comment deleted successfully" });
+        } catch (error) {
+        console.error("Error deleting comment:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+        } finally {
+        await prisma.$disconnect();
+        }
+    });
+
+
+blogRouter.post('/likes/:type/:id', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+        
+    const type = c.req.param('type').toLowerCase();
+    const id = c.req.param('id');
+
+    if (!['post', 'comment'].includes(type)) {
+        c.status(400);
+        return c.json({ message: "Invalid like type" });
+    }
+    
+    const currentUserId = c.get('userId');
+        
+    try {
+
+        const existingLike = await prisma.like.findFirst({
+            where: {
+                userId: currentUserId,
+                ...(type === 'post' ? { postId: id } : { commentId: id })
+            }
+        });
+
+        if (existingLike) {
+            c.status(400);
+            return c.json({ message: "You have already liked this " + type });
+        }
+        const likeData: any = {
+            user: { connect: { id: currentUserId } },
+        };
+        if (type === 'post') {
+            likeData.post = { connect: { id: id } };
+        } else if (type === 'comment') {
+            likeData.comment = { connect: { id: id } };
+        }
+        const like = await prisma.like.create({ data: likeData });
+        return c.json({ message: "Like created successfully", like });
+    } catch (error) {
+        console.error("Error creating like:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+    } finally {
+        await prisma.$disconnect();
+    }
+});
+
+
+blogRouter.get('/likes/post/:postId', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+        });
+    
+        const postId = c.req.param('postId');
+    
+        try {
+        const likes = await prisma.like.findMany({
+            where: { postId },
+            include: { user: true },
+        });
+    
+        return c.json({ likes });
+        } catch (error) {
+        console.error("Error fetching likes:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+        } finally {
+        await prisma.$disconnect();
+        }
+    });
+
+blogRouter.get('/likes/comment/:commentId', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+        });
+        
+        const commentId = c.req.param('commentId');
+        
+        try {
+        const likes = await prisma.like.findMany({
+            where: { commentId },
+            include: { user: true },
+        });
+        
+        return c.json({ likes });
+        } catch (error) {
+        console.error("Error fetching likes:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+        } finally {
+        await prisma.$disconnect();
+        }
+    });
+
+blogRouter.delete('/likes/:likeId', async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const likeId = c.req.param('likeId');
+
+    try {
+        await prisma.like.delete({ where: { id: likeId } });
+
+        return c.json({ message: "Like deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting like:", error);
+        c.status(500);
+        return c.json({ message: "Internal server error" });
+    } finally {
+        await prisma.$disconnect();
+    }
+});
