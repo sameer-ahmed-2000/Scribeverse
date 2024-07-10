@@ -135,6 +135,14 @@ blogRouter.get('/blog/:id',async (c)=>{
         const post = await prisma.post.findUnique({
             where: {
                 id
+            },
+            include:{
+                _count:{
+                    select:{ 
+                        likes:true,
+                        comments:true
+                    }
+                }
             }
         });
 
@@ -221,7 +229,20 @@ blogRouter.get('/:postId/comments', async (c) => {
     try {
     const comments = await prisma.comment.findMany({
         where: { postId },
-        include: { author: true },
+        include: {
+            author: {
+                select:{
+                    name:true
+                }
+            },
+            _count:{
+                select:{
+                    likes:true,
+                    replies:true
+                }
+            }
+            
+        },
     });
 
     return c.json({ comments });
@@ -344,7 +365,13 @@ blogRouter.get('/likes/post/:postId', async (c) => {
         try {
         const likes = await prisma.like.findMany({
             where: { postId },
-            include: { user: true },
+            include: {
+                user: {
+                    select:{
+                        name:true
+                    }
+                }
+            },
         });
     
         return c.json({ likes });
@@ -367,7 +394,13 @@ blogRouter.get('/likes/comment/:commentId', async (c) => {
         try {
         const likes = await prisma.like.findMany({
             where: { commentId },
-            include: { user: true },
+            include: {
+                user: {
+                    select:{
+                        name:true
+                    }
+                }
+            },
         });
         
         return c.json({ likes });
