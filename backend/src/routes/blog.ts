@@ -61,6 +61,7 @@ blogRouter.post('/blog',async (c)=>{
 
             }
         });
+        c.status(200)
         return c.json({
             id: blog.id
         });
@@ -99,6 +100,7 @@ blogRouter.put('/blog',async(c)=>{
             }
         });
         prisma.$disconnect
+        c.status(200)
         return c.text('updated post');
     }catch(error){
         c.status(422);
@@ -117,6 +119,7 @@ blogRouter.delete('/blog/:id',async (c)=>{
                 id
             }
         })
+        c.status(200)
         return c.json({
             message:"Post deleted"
         })
@@ -145,7 +148,7 @@ blogRouter.get('/blog/:id',async (c)=>{
                 }
             }
         });
-
+        c.status(200)
         return c.json({
             post
         });
@@ -169,6 +172,7 @@ blogRouter.get('/bulk',async (c)=>{
             take: limit,
         });
         const totalBlogs = await prisma.post.count();
+        c.status(200)
         return c.json({
             posts,
             page,
@@ -207,7 +211,7 @@ blogRouter.post('/:postId/comments', async (c) => {
                 post:{connect:{id:postId}}
             },
         });
-    
+        c.status(200)
         return c.json({ message: "Comment created successfully", comment });
         } catch (error) {
         console.error("Error creating comment:", error);
@@ -244,7 +248,7 @@ blogRouter.get('/:postId/comments', async (c) => {
             
         },
     });
-
+    c.status(200)
     return c.json({ comments });
     } catch (error) {
     console.error("Error fetching comments:", error);
@@ -274,7 +278,7 @@ blogRouter.put('/comments/:commentId', async (c) => {
         where: { id: commentId },
         data: { content },
     });
-
+    c.status(200)
     return c.json({ message: "Comment updated successfully", updatedComment });
     } catch (error) {
     console.error("Error updating comment:", error);
@@ -295,7 +299,7 @@ blogRouter.delete('/comments/:commentId', async (c) => {
     
         try {
         await prisma.comment.delete({ where: { id: commentId } });
-    
+        c.status(200)
         return c.json({ message: "Comment deleted successfully" });
         } catch (error) {
         console.error("Error deleting comment:", error);
@@ -344,6 +348,7 @@ blogRouter.post('/likes/:type/:id', async (c) => {
             likeData.comment = { connect: { id: id } };
         }
         const like = await prisma.like.create({ data: likeData });
+        c.status(200)
         return c.json({ message: "Like created successfully", like });
     } catch (error) {
         console.error("Error creating like:", error);
@@ -373,7 +378,7 @@ blogRouter.get('/likes/post/:postId', async (c) => {
                 }
             },
         });
-    
+        c.status(200)
         return c.json({ likes });
         } catch (error) {
         console.error("Error fetching likes:", error);
@@ -402,7 +407,7 @@ blogRouter.get('/likes/comment/:commentId', async (c) => {
                 }
             },
         });
-        
+        c.status(200)
         return c.json({ likes });
         } catch (error) {
         console.error("Error fetching likes:", error);
@@ -422,7 +427,7 @@ blogRouter.delete('/likes/:likeId', async (c) => {
 
     try {
         await prisma.like.delete({ where: { id: likeId } });
-
+        c.status(200)
         return c.json({ message: "Like deleted successfully" });
     } catch (error) {
         console.error("Error deleting like:", error);

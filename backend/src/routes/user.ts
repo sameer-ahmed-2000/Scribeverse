@@ -159,10 +159,16 @@ handleRouter.get('/me',async(c)=>{
             },
             include:{
                 following:true,
-                followers:true
+                followers:true,
+                _count:{
+                    select:{
+                        following:true,
+                        followers:true
+                    }
+                }
             }
         })
-
+        c.status(200)
         return c.json({
             user,
             
@@ -205,6 +211,7 @@ handleRouter.post('/update-interests', async (c) => {
             },
             where:{id:userId}
         })
+        c.status(200)
         return c.json({
             message:"Interests updated successfully",
             interests:newInterest
@@ -251,6 +258,7 @@ handleRouter.post('/delete-interests', async (c) => {
             },
             where:{id:userId}
         })
+        c.status(200)
         return c.json({
             message:"Interests updated successfully",
             interests:removeInterest
@@ -311,7 +319,7 @@ handleRouter.post('/follow/:id', async (c) => {
                 },
             }),
         ]);
-
+        c.status(200)
         return c.json({ message: "Successfully followed the user" });
     } catch (error) {
         console.error("Error following user:", error);
@@ -371,7 +379,7 @@ handleRouter.post('/unfollow/:id', async (c) => {
                 },
             }),
         ]);
-
+        c.status(200)
         return c.json({ message: "Successfully unfollowed the user" });
     } catch (error) {
         console.error("Error unfollowing user:", error);
