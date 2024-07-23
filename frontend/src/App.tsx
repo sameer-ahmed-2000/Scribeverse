@@ -4,6 +4,7 @@ import './App.css'
 import { AuthProvider } from './authentication/AuthContext'
 import Signin from './pages/signin'
 import Signup from './pages/signup'
+import MainPage from './pages/mainpage'
 
 function App() {
 
@@ -13,6 +14,7 @@ function App() {
     <Routes>
       <Route path="/signin" element={<Signin />} ></Route>
       <Route path="/signup" element={<Signup />} ></Route>
+      <Route path="/main" element={<MainPage/>} ></Route>
       <Route path='*' element={<Navigate to='/signin'/>}/>
     </Routes>
     </BrowserRouter>

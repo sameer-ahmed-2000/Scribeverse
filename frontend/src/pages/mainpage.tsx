@@ -1,7 +1,9 @@
-export function mainPage(){
+import InterestSelector from "./interest";
+
+export default function MainPage(){
     return(
         <div>
-            hello
+            <InterestSelector></InterestSelector>
         </div>
     )
 }
