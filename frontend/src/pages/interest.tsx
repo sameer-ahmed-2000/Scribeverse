@@ -1,5 +1,6 @@
 import React, { useState, useEffect, FC } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const interestsList: string[] = [
     "Programming", "Writing", "Politics", "Data Science", "Psychology", "Python",
@@ -23,6 +24,7 @@ const interestsList: string[] = [
 ];
 
 const InterestSelector: FC = () => {
+    const navigate = useNavigate();
     const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set<string>());
     const [error, setError] = useState<string | null>(null);
     const handleButtonClick = (interest: string) => {
@@ -45,6 +47,7 @@ const InterestSelector: FC = () => {
         try {
             const response = await axios.post('http://127.0.0.1:8787/api/v1/update/update-interests', data);
             alert('Interests updated successfully!');
+            navigate('/main');
         } catch (error) {
             console.error('Error updating interests:', error);
             alert('Failed to update interests');

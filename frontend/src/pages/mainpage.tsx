@@ -1,9 +1,9 @@
-import InterestSelector from "./interest";
+import { Header } from "../components/Header";
 
 export default function MainPage(){
     return(
         <div>
-            <InterestSelector></InterestSelector>
+            <Header></Header>
         </div>
     )
 }
