@@ -27,7 +27,7 @@ export function useSignup() {
             });
             localStorage.setItem('token', response.data.token);
             login(response.data.token);
-            navigate('/main');
+            navigate('/interest');
         } catch (err) {
             setError('Sign in failed. Please check your credentials and try again.');
         } finally {
