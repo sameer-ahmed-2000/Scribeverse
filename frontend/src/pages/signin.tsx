@@ -6,14 +6,17 @@ import { Link } from 'react-router-dom';
 import { FunctionButton } from '../components/Button';
 
 export default function Signin() {
+    
     const {
         setEmail,
         setPassword,
         loading,
         error,
+        emailError,
+        passwordError,
         handleSignin
     } = useSignin();
-
+    
     return (
         <div className="grid grid-cols-2 h-screen">
             <div className="flex flex-col justify-center items-center col-span-1">
@@ -21,7 +24,9 @@ export default function Signin() {
                     <div className="text-3xl font-extrabold">Sign in</div>
                     <div className="pt-2">
                         <InputBox placeholder="sameer@gmail.com" onChange={(e) => setEmail(e.target.value)} />
+                        {emailError && <div className="text-red-500 mt-2">{emailError}</div>}
                         <PasswordBox placeholder="123456" onChange={(e) => setPassword(e.target.value)} />
+                        {passwordError && <div className="text-red-500 mt-2">{passwordError}</div>}
                         <FunctionButton
                             onClick={handleSignin}
                             label={loading ? "Signing in..." : "Sign in"}

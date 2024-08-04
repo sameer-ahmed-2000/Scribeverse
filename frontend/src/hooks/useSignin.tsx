@@ -10,12 +10,20 @@ export function useSignin() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [emailError, setEmailerror] = useState('');
+    const [passwordError, setPassworderror] = useState('');
 
     const handleSignin = async () => {
         if (!email || !password) {
             setError('Please fill in all fields');
+            if (!email) {
+                setEmailerror('Please enter a valid email');
+            } else {
+                setPassworderror('Please enter a valid password');
+            }
             return;
         }
+        
         setLoading(true);
         setError('');
         try {
@@ -40,6 +48,11 @@ export function useSignin() {
         setPassword,
         loading,
         error,
+        setError,
+        emailError,
+        setEmailerror,
+        passwordError,
+        setPassworderror,
         handleSignin,
     };
 }
