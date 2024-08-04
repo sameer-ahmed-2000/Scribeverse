@@ -72,9 +72,6 @@ const InterestSelector: FC = () => {
                     </button>
                 ))}
             </div>
-            {/* <div className="flex justify-center mt-4">
-                <button type="submit" className="mt-4 px-6 py-2 bg-gray-800 text-white rounded-full">Update Interests</button>
-            </div> */}
             {error && <p className="text-red-500 text-center mt-4">{error}</p>}
             <div className="flex justify-center mt-4">
                 <button

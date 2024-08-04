@@ -12,6 +12,9 @@ export default function Signup() {
         setPassword,
         loading,
         error,
+        nameError,
+        emailError,
+        passwordError,
         handleSignup
     } = useSignup();
 
@@ -22,8 +25,11 @@ export default function Signup() {
                     <div className="text-3xl font-extrabold">Create an Account</div>
                     <div className="pt-2">
                         <InputBox placeholder="Sameer" onChange={(e) => setName(e.target.value)} />
+                        {nameError && <div className="text-red-500 mt-2">{nameError}</div>}
                         <InputBox placeholder="sameer@gmail.com" onChange={(e) => setEmail(e.target.value)} />
+                        {emailError && <div className="text-red-500 mt-2">{emailError}</div>}
                         <PasswordBox placeholder="123456" onChange={(e) => setPassword(e.target.value)} />
+                        {passwordError && <div className="text-red-500 mt-2">{passwordError}</div>}
                         <FunctionButton
                             onClick={handleSignup}
                             label={loading ? "Signing up..." : "Sign up"}
