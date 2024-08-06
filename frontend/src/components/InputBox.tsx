@@ -7,7 +7,7 @@ interface InputBoxProps {
 
 export function InputBox({ placeholder, onChange }: InputBoxProps) {
     return (
-        <div className="py-6">
+        <div className="py-2">
             <input
                 onChange={onChange}
                 placeholder={placeholder}

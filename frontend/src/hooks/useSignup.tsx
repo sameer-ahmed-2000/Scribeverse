@@ -16,17 +16,39 @@ export function useSignup() {
     const [nameError, setNameerror] = useState('');
 
     const handleSignup = async () => {
+        // if (!name || !email || !password) {
+        //     setError('Please fill in all fields');
+        //     if (!email && !name && !password) {
+        //         setEmailerror('Please enter your email');
+        //         setNameerror('Please enter your name');
+        //         setPassworderror('Please enter your password');
+        //     } else if (!email && !name ) {
+        //         setEmailerror('Please enter your email');
+        //         setNameerror('Please enter your name');
+        //         setPassworderror('Please enter your password')
+        //     } else if (!email && !password ) {
+        //         setEmailerror('Please enter your email');
+        //         setPassworderror('Please enter your password')
+        //     }else if (!password && !name ) {
+        //         setNameerror('Please enter your name');
+        //         setPassworderror('Please enter your password')
+        //     }else if (!email) {
+        //         setEmailerror('Please enter your email');
+        //     }else if (!name ) {
+        //         setNameerror('Please enter your name');
+        //     } else{
+        //         setPassworderror('Please enter your password')
+        //     }
+        //     return;
+        // }
         if (!name || !email || !password) {
             setError('Please fill in all fields');
-            if (!email ) {
-                setEmailerror('Please enter your email');
-            } else if (!name) {
-                setNameerror('Please enter your name');
-            } else{
-                setPassworderror('Please enter your password')
-            }
+            if (!name) setNameerror('Please enter your name');
+            if (!email) setEmailerror('Please enter your email');
+            if (!password) setPassworderror('Please enter your password');
             return;
         }
+        
         setLoading(true);
         setError('');
         try {

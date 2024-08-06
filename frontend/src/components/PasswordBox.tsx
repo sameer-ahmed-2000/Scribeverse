@@ -14,7 +14,7 @@ export function PasswordBox({placeholder,onChange}:passwordTypes){
         setPasswordVisible(!passwordVisible);
     };
     return(
-        <div className="py-6">
+        <div className="py-2">
                 <div className='relative'>
                 <input type={passwordVisible ? "text" : "password"}
                 placeholder={placeholder}

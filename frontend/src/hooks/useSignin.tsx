@@ -16,11 +16,8 @@ export function useSignin() {
     const handleSignin = async () => {
         if (!email || !password) {
             setError('Please fill in all fields');
-            if (!email) {
-                setEmailerror('Please enter a valid email');
-            } else {
-                setPassworderror('Please enter a valid password');
-            }
+            if (!email) setEmailerror('Please enter a valid email');
+            if (!password) setPassworderror('Please enter a valid password');
             return;
         }
         

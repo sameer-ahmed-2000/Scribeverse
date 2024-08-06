@@ -48,8 +48,8 @@ export function Header() {
                 </div>
             </div>
 
-            <div className="pl-96 col-span-4 flex justify-between ">
-                <button className="flex">
+            <div className="pl-96 col-span-4 flex justify-end ">
+                <button className="flex px-3 pt-1">
                     <svg className="w-6 h-6" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3" stroke="#808080" fill="none">
                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -60,7 +60,14 @@ export function Header() {
                         </g>
                     </svg><div className="text-gray-600 px-2 text-sm pt-0.5">Write</div>
                 </button>
+                <button className="px-3 pr-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#808080" aria-label="Notifications">
+                        <path stroke="currentColor" stroke-linecap="round" d="M15 18.5a3 3 0 1 1-6 0"></path>
+                        <path stroke="currentColor" stroke-linejoin="round" d="M5.5 10.532V9a6.5 6.5 0 0 1 13 0v1.532c0 1.42.564 2.782 1.568 3.786l.032.032c.256.256.4.604.4.966v2.934a.25.25 0 0 1-.25.25H3.75a.25.25 0 0 1-.25-.25v-2.934c0-.363.144-.71.4-.966l.032-.032A5.35 5.35 0 0 0 5.5 10.532Z"></path>
+                    </svg>
+                </button>
 
+                <button className="rounded-full h-8 w-8 bg-slate-200 flex justify-center mr-7"/>
             </div>
         </nav>
     )
