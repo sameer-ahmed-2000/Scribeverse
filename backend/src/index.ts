@@ -10,20 +10,8 @@ const app = new Hono<{
   }
 }>();
 
-// CORS options
-const corsOptions = {
-  origin: (origin: string) => {
-    return origin === 'http://localhost:5173' ? origin : 'http://127.0.0.1:8787';
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+app.use('/*',cors());
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
 
 app.route('/api/v1/user', userRouter);
 app.route('/api/v1/book', blogRouter);

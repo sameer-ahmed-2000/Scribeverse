@@ -186,7 +186,36 @@ blogRouter.get('/bulk',async (c)=>{
     }
     
 })
-
+blogRouter.get('/blog/:topic',async (c)=>{
+    try{
+        const topic =  c.req.param("topic");
+        const prisma = new PrismaClient({
+            datasourceUrl: c.env.DATABASE_URL	,
+        }).$extends(withAccelerate());
+        
+        const post = await prisma.post.findMany({
+            where: {
+                topic
+            },
+            include:{
+                _count:{
+                    select:{
+                        likes:true,
+                        comments:true
+                    }
+                }
+            }
+        });
+        c.status(200)
+        return c.json({
+            post
+        });
+    }catch(error){
+        c.status(422);
+        return c.json({ error: "Error while getting the blog" });
+    }
+    
+})
 blogRouter.post('/:postId/comments', async (c) => {
 
     const prisma = new PrismaClient({

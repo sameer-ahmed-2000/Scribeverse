@@ -15,15 +15,15 @@ interface CustomContext {
         userId: string;
     };
 }
-export const userRouter=new Hono<CustomContext>()
+export const userRouter = new Hono<CustomContext>()
 export const handleRouter = new Hono<CustomContext>()
 
 handleRouter.use("/*", async (c, next) => {
     try {
         const authHeader = c.req.header("Authorization") || "";
-        if(authHeader && authHeader.startsWith('Bearer ')){
-            const token=authHeader.split(' ')[1];
-            const {payload}=await jwtVerify(token,new TextEncoder().encode(c.env.JWT_SECRET))
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            const { payload } = await jwtVerify(token, new TextEncoder().encode(c.env.JWT_SECRET))
             if (payload && typeof payload === 'object' && 'id' in payload) {
                 c.set('userId', payload.id as string);
             }
@@ -41,89 +41,89 @@ async function hashPassword(password: string): Promise<string> {
     const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds: 10
     return hashedPassword;
 }
-userRouter.post('/signup',async(c)=>{
+userRouter.post('/signup', async (c) => {
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
     const body = await c.req.json();
-    const {success}=signupInput.safeParse(body)
-    if(!success){
+    const { success } = signupInput.safeParse(body)
+    if (!success) {
         c.status(411)
         return c.json({
-            message:"Incorrect inputs"
-            
+            message: "Incorrect inputs"
+
         })
     }
 
-    try{
-        const existingUser =await prisma.user.findFirst({
-        where:{
-            email:body.email
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                email: body.email
+            }
+        })
+        if (existingUser) {
+            c.status(409)
+            return c.json({
+                message: "Email is already taken"
+
+            })
         }
-        })
-        if (existingUser){
-        c.status(409)
-        return c.json({
-            message:"Email is already taken"
-            
-        })
-    }
-        const hashedPassword=await hashPassword(body.password);
+        const hashedPassword = await hashPassword(body.password);
         const user = await prisma.user.create({
-        
-        data:{
-            name:body.name,
-            email:body.email,
-            password:hashedPassword,
-        }
-        
+
+            data: {
+                name: body.name,
+                email: body.email,
+                password: hashedPassword,
+            }
+
         })
         const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
-        return c.json({ id:user.id, jwt });
-    } catch(error){
+        return c.json({ id: user.id, jwt });
+    } catch (error) {
         c.status(500);
         return c.json({ message: 'Internal server error', error: (error as Error).message });
-    }finally{
+    } finally {
         prisma.$disconnect();
     }
 })
 async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
 }
-userRouter.post('/signin',async(c)=>{
+userRouter.post('/signin', async (c) => {
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate())
     const body = await c.req.json();
-    const {success}=signinInput.safeParse(body)
-    if(!success){
+    const { success } = signinInput.safeParse(body)
+    if (!success) {
         c.status(411)
         return c.json({
-            message:"Incorrect inputs"
-            
-        })
-    }
-    try{
-        
-        const User =await prisma.user.findFirst({
-        where:{
-            email:body.email
-        }
-        })
-        if (!User||!(await verifyPassword(body.password,User.password))){
-        c.status(403)
-        return c.json({
-            message:"Invalid email or password"
-        })
-    }
+            message: "Incorrect inputs"
 
-    const jwt = await sign({ id: User.id }, c.env.JWT_SECRET);
-    return c.json({ id:User.id,jwt });
-    } catch(error){
+        })
+    }
+    try {
+
+        const User = await prisma.user.findFirst({
+            where: {
+                email: body.email
+            }
+        })
+        if (!User || !(await verifyPassword(body.password, User.password))) {
+            c.status(403)
+            return c.json({
+                message: "Invalid email or password"
+            })
+        }
+
+        const jwt = await sign({ id: User.id }, c.env.JWT_SECRET);
+        return c.json({ id: User.id, jwt });
+    } catch (error) {
         console.error('Error during signin:', error);
         c.status(500);
         return c.json({ message: 'Internal server error', error: (error as Error).message });
-    } finally{
+    } finally {
         prisma.$disconnect();
     }
 })
@@ -131,9 +131,9 @@ userRouter.post('/signin',async(c)=>{
 handleRouter.use("/*", async (c, next) => {
     try {
         const authHeader = c.req.header("Authorization") || "";
-        if(authHeader && authHeader.startsWith('Bearer ')){
-            const token=authHeader.split(' ')[1];
-            const {payload}=await jwtVerify(token,new TextEncoder().encode(c.env.JWT_SECRET))
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            const { payload } = await jwtVerify(token, new TextEncoder().encode(c.env.JWT_SECRET))
             if (payload && typeof payload === 'object' && 'id' in payload) {
                 c.set('userId', payload.id as string);
             }
@@ -146,37 +146,47 @@ handleRouter.use("/*", async (c, next) => {
     }
 });
 
-handleRouter.get('/me',async(c)=>{
+handleRouter.get('/me', async (c) => {
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
-    }).$extends(withAccelerate())
+    }).$extends(withAccelerate());
 
-    try{
-        const userId=c.get('userId')
-        const user=await prisma.user.findFirst({
-            where:{
-                id:userId
+    try {
+        const userId = c.get('userId'); // Replace with secure user ID retrieval
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: userId,
             },
-            include:{
-                following:true,
-                followers:true,
-                _count:{
-                    select:{
-                        following:true,
-                        followers:true
-                    }
-                }
-            }
-        })
-        c.status(200)
-        return c.json({
-            user,
-            
-        })
-    }catch{
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                interests: true,
+                following: true,
+                followers: true,
+                _count: {
+                    select: {
+                        following: true,
+                        followers: true,
+                    },
+                },
+            },
+        });
 
+        if (!user) {
+            c.status(404);
+            return c.json({ error: 'User not found' });
+        }
+
+        c.status(200);
+        return c.json({ user });
+    } catch (error) {
+        console.error(error);
+        c.status(500);
+        return c.json({ error: 'Failed to fetch user data' });
     }
-})
+});
 
 handleRouter.post('/update-interests', async (c) => {
     const prisma = new PrismaClient({
@@ -184,39 +194,39 @@ handleRouter.post('/update-interests', async (c) => {
     }).$extends(withAccelerate())
     const body = await c.req.json();
     const parsedInput = interestInput.safeParse(body);
-    if(!parsedInput.success){
+    if (!parsedInput.success) {
         c.status(411)
         return c.json({
-            message:"Incorrect inputs"
-            
+            message: "Incorrect inputs"
+
         })
     }
-    const {add=[]}=parsedInput.data||{}
+    const { add = [] } = parsedInput.data || {}
 
     try {
-        const userId=c.get('userId')
-        const user= await prisma.user.findFirst({
-            where:{
-                id:userId
+        const userId = c.get('userId')
+        const user = await prisma.user.findFirst({
+            where: {
+                id: userId
             },
-            select:{
-                interests:true
+            select: {
+                interests: true
             }
         })
-        let newInterest=user?.interests||[];
-        newInterest=Array.from(new Set([...newInterest,...add]))
+        let newInterest = user?.interests || [];
+        newInterest = Array.from(new Set([...newInterest, ...add]))
         await prisma.user.update({
-            data:{
-                interests:newInterest
+            data: {
+                interests: newInterest
             },
-            where:{id:userId}
+            where: { id: userId }
         })
         c.status(200)
         return c.json({
-            message:"Interests updated successfully",
-            interests:newInterest
+            message: "Interests updated successfully",
+            interests: newInterest
         })
-        
+
     } catch (error) {
         c.status(500)
         c.json({ message: "Internal server error" });
@@ -231,53 +241,53 @@ handleRouter.post('/delete-interests', async (c) => {
     }).$extends(withAccelerate())
     const body = await c.req.json();
     const parsedInput = interestInput.safeParse(body);
-    if(!parsedInput.success){
+    if (!parsedInput.success) {
         c.status(411)
         return c.json({
-            message:"Incorrect inputs"
-            
+            message: "Incorrect inputs"
+
         })
     }
-    const {remove=[]}=parsedInput.data||{}
+    const { remove = [] } = parsedInput.data || {}
 
     try {
-        const userId=c.get('userId')
-        const user= await prisma.user.findFirst({
-            where:{
-                id:userId
+        const userId = c.get('userId')
+        const user = await prisma.user.findFirst({
+            where: {
+                id: userId
             },
-            select:{
-                interests:true
+            select: {
+                interests: true
             }
         })
-        let removeInterest=user?.interests||[];
+        let removeInterest = user?.interests || [];
         removeInterest = removeInterest.filter(interest => !remove.includes(interest));
         await prisma.user.update({
-            data:{
-                interests:removeInterest
+            data: {
+                interests: removeInterest
             },
-            where:{id:userId}
+            where: { id: userId }
         })
         c.status(200)
         return c.json({
-            message:"Interests updated successfully",
-            interests:removeInterest
+            message: "Interests updated successfully",
+            interests: removeInterest
         })
-        
+
     } catch (error) {
         c.status(500)
-        return c.json({message:"Error while updating"})
+        return c.json({ message: "Error while updating" })
     } finally {
         await prisma.$disconnect();
     }
 });
 
 handleRouter.post('/follow/:id', async (c) => {
-    const id=c.req.param("id");
+    const id = c.req.param("id");
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-    const userIdToFollow  = id;
+    const userIdToFollow = id;
 
     if (!userIdToFollow) {
         c.status(400);
@@ -332,7 +342,7 @@ handleRouter.post('/follow/:id', async (c) => {
 
 
 handleRouter.post('/unfollow/:id', async (c) => {
-    const id=c.req.param("id");
+    const id = c.req.param("id");
     const prisma = new PrismaClient({
         datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
@@ -384,7 +394,7 @@ handleRouter.post('/unfollow/:id', async (c) => {
     } catch (error) {
         console.error("Error unfollowing user:", error);
         c.status(500);
-        return c.json({ message: "Internal server error", error});
+        return c.json({ message: "Internal server error", error });
     } finally {
         await prisma.$disconnect();
     }
