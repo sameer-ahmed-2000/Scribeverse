@@ -1,0 +1,10 @@
+/* In your global CSS or a CSS module */
+.scrollbar-hide {
+    overflow: -moz-scrollbars-none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer and Edge */
+    scrollbar-width: none; /* Safari and modern browsers */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
