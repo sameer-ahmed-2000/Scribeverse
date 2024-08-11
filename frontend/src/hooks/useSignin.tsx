@@ -16,9 +16,13 @@ export function useSignin() {
     const handleSignin = async () => {
         if (!email || !password) {
             setError('Please fill in all fields');
-            if (!email) setEmailerror('Please enter a valid email');
-            if (!password) setPassworderror('Please enter a valid password');
-            return;
+            if (!email) {
+                setEmailerror('Please enter a valid email');
+            }
+            if (!password) {
+                setPassworderror('Please enter a valid password');
+            }
+            return null;
         }
         
         setLoading(true);
@@ -28,8 +32,8 @@ export function useSignin() {
                 email,
                 password,
             });
-            localStorage.setItem('token', response.data.token);
-            login(response.data.token);
+            localStorage.setItem('token', response.data.jwt);
+            login(response.data.jwt);
             navigate('/main');
         } catch (err) {
             setError('Sign in failed. Please check your credentials and try again.');

@@ -16,37 +16,18 @@ export function useSignup() {
     const [nameError, setNameerror] = useState('');
 
     const handleSignup = async () => {
-        // if (!name || !email || !password) {
-        //     setError('Please fill in all fields');
-        //     if (!email && !name && !password) {
-        //         setEmailerror('Please enter your email');
-        //         setNameerror('Please enter your name');
-        //         setPassworderror('Please enter your password');
-        //     } else if (!email && !name ) {
-        //         setEmailerror('Please enter your email');
-        //         setNameerror('Please enter your name');
-        //         setPassworderror('Please enter your password')
-        //     } else if (!email && !password ) {
-        //         setEmailerror('Please enter your email');
-        //         setPassworderror('Please enter your password')
-        //     }else if (!password && !name ) {
-        //         setNameerror('Please enter your name');
-        //         setPassworderror('Please enter your password')
-        //     }else if (!email) {
-        //         setEmailerror('Please enter your email');
-        //     }else if (!name ) {
-        //         setNameerror('Please enter your name');
-        //     } else{
-        //         setPassworderror('Please enter your password')
-        //     }
-        //     return;
-        // }
         if (!name || !email || !password) {
             setError('Please fill in all fields');
-            if (!name) setNameerror('Please enter your name');
-            if (!email) setEmailerror('Please enter your email');
-            if (!password) setPassworderror('Please enter your password');
-            return;
+            if (!name) {
+                setNameerror('Please enter your name');
+            }
+            if (!email) {
+                setEmailerror('Please enter your email');
+            }
+            if (!password) {
+                setPassworderror('Please enter your password');
+            }
+            return null;
         }
         
         setLoading(true);
@@ -57,8 +38,8 @@ export function useSignup() {
                 email,
                 password,
             });
-            localStorage.setItem('token', response.data.token);
-            login(response.data.token);
+            localStorage.setItem('token', response.data.jwt);
+            login(response.data.jwt);
             navigate('/interest');
         } catch (err) {
             setError('Sign in failed. Please check your credentials and try again.');
